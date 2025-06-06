@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8" />
+<title>Push Test</title>
+<h1>📨 Push サンプル</h1>
+<button id="subscribe">通知許可 & 登録</button>
+<script>
+(async () => {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('このブラウザは Push API 未対応です'); return;
+  }
+  const sw = await navigator.serviceWorker.register('/sw.js');
+  document.getElementById('subscribe').onclick = async () => {
+    // ★↓↓ 公開鍵を貼り付け
+    const vapidKey = 'BAk09AyvYB0uZyjRCrByLpCGzRx_QUnKEr9dE7u4x_fv5Fn506bSInL7BMoZfl9JhGWxsYPl8tfOyG_NjDqq4hc';
+    const sub = await sw.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: Uint8Array.from(atob(vapidKey.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0)),
+    });
+    await fetch('/save-sub', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(sub)});
+    alert('登録成功！ 送信スクリプトを走らせてみてください');
+  };
+})();
+</script>
